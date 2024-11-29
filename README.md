@@ -2,6 +2,9 @@
 
 REPL plugin for neovim, because somehow everything else does too much for me.
 
+This is more of a personal plugin, feature requests are unlikely to be
+fulfilled.
+
 ## Usage
 
 commands:
