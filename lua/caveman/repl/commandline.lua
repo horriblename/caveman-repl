@@ -7,7 +7,8 @@ local const = require('caveman.repl.const')
 ---@field type string|fun(string):boolean, string?
 ---error string or nil if ok
 ---@field default any
----@field complete fun():any[]
+---@field transform fun(string):any
+---@field complete fun():string[]
 
 ---@alias Flags table<string, Flag>
 
@@ -32,13 +33,13 @@ function M.parse_flags(flags, args)
     local rest = {}
     for _, arg in ipairs(args) do
         local flag_name, val = split_once(arg, '=')
-        local flag = flags[arg]
+        local flag = flags[flag_name]
         if flag then
             vim.validate({
                 [flag_name] = { val, flag.type },
             })
 
-            parsed[flag_name] = val
+            parsed[flag_name] = flag.transform and flag.transform(val) or val
         else
             table.insert(rest, arg)
         end
@@ -73,13 +74,16 @@ end
 ---@type Flags
 M.send_flags = {
     trim = {
+        default = "",
         type = function(x)
             if const.TrimBehavior[string.upper(x)] then
                 return true
             end
             return false, "trim should be a TrimBehavior"
         end,
-        default = "",
+        transform = function(s)
+            return const.TrimBehavior[string.upper(s)]
+        end,
         complete = function()
             return vim.iter(vim.tbl_keys(const.TrimBehavior))
                 :map(string.lower)
