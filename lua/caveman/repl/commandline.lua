@@ -55,8 +55,8 @@ function M.gen_complete(flags)
         table.insert(flag_names, name)
     end
 
-    return function(arg_lead, cmd_line, cursor_pos)
-        local name, val = split_once(arg_lead, '=')
+    return function(arg_lead)
+        local name, _ = split_once(arg_lead, '=')
         local flag = flags[name]
         if flag then
             return vim.iter(flag.complete()):map(function(item)
@@ -65,7 +65,7 @@ function M.gen_complete(flags)
         end
 
         return vim.iter(flag_names):map(function(fname)
-            return fname + '='
+            return fname .. '='
         end):totable()
     end
 end
@@ -74,14 +74,16 @@ end
 M.send_flags = {
     trim = {
         type = function(x)
-            if const.TrimBehavior[x] then
+            if const.TrimBehavior[string.upper(x)] then
                 return true
             end
             return false, "trim should be a TrimBehavior"
         end,
         default = "",
         complete = function()
-            return vim.tbl_keys(const.TrimBehavior)
+            return vim.iter(vim.tbl_keys(const.TrimBehavior))
+                :map(string.lower)
+                :totable()
         end,
     },
 }

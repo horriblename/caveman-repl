@@ -21,7 +21,7 @@ vim.api.nvim_create_user_command(
         addr = "lines",
         complete = function(lead, line, pos)
             local cmdline = require('caveman.repl.commandline')
-            return cmdline.gen_complete(cmdline.args)(lead, line, pos)
+            return cmdline.gen_complete(cmdline.send_flags)(lead, line, pos)
         end,
     }
 )
