@@ -69,7 +69,6 @@ end
 
 ---@param cmd string|string[]?
 function M.start(cmd)
-    vim.notify('innput cmd:' .. vim.inspect(cmd))
     vim.validate({ cmd = { cmd, { 'string', 'table' }, true } })
     cmd = cmd or
         validate_b_opt("caveman_repl_cmd", { "string", "table" }) or
@@ -78,7 +77,6 @@ function M.start(cmd)
     local current_win = vim.api.nvim_get_current_win()
 
     vim.cmd('botright split')
-    vim.notify('starting with cmd: ' .. vim.inspect(cmd))
     if type(cmd) == "table" then
         vim.cmd.terminal(unpack(cmd))
     else
@@ -88,7 +86,6 @@ function M.start(cmd)
 
     vim.api.nvim_set_current_win(current_win)
     local buf = vim.api.nvim_get_current_buf()
-    vim.print(buf)
     state.jobs[buf] = term_id
 end
 
