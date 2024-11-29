@@ -7,7 +7,7 @@ local const = require('caveman.repl.const')
 ---@field type string|fun(string):boolean, string?
 ---error string or nil if ok
 ---@field default any
----@field transform fun(string):any
+---@field transform (fun(string):any)?
 ---@field complete fun():string[]
 
 ---@alias Flags table<string, Flag>
@@ -25,6 +25,13 @@ local function split_once(s, delimiter)
     return before, after
 end
 
+---@type table<string, fun(string):boolean>
+local builtin_types = {
+    boolean = function(x) return x == "true" or x == "false" end,
+    number = function(x) return tonumber(x) and true or false end,
+    string = function() return true end
+}
+
 ---@param flags Flags
 ---@param args string[]
 ---@return {flags: table<string, any>, rest: string[]}
@@ -36,9 +43,15 @@ function M.parse_flags(flags, args)
         flag_name = string.gsub(flag_name, '^%-', '')
 
         local flag = flags[flag_name]
+        local validator = assert(
+            type(flag.type) == "function"
+            and flag.type --[[@as fun(string):boolean,string?]]
+            or builtin_types[flag.type]
+        )
+
         if flag then
             vim.validate({
-                [flag_name] = { val, flag.type },
+                [flag_name] = { val, validator },
             })
 
             parsed[flag_name] = flag.transform and flag.transform(val) or val
@@ -93,6 +106,12 @@ M.send_flags = {
                 :totable()
         end,
     },
+    keep_empty = {
+        default = false,
+        type = "boolean",
+        transform = function(s) return s == "true" end,
+        complete = function() return { "true", "false" } end,
+    }
 }
 
 return M

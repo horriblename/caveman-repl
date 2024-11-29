@@ -7,12 +7,31 @@ local state = {
     jobs = {}
 }
 
+---Get boolean config value
+---@param arg boolean?
+---@param b string name of vim.b variable
+---@param g string? name of vim.g variable
+---@param default boolean
+---@return boolean
+local function get_bool_config(arg, b, g, default)
+    if arg ~= nil then
+        return arg
+    elseif vim.b[b] ~= nil then
+        return vim.b[b]
+    elseif g and vim.g[g] ~= nil then
+        return vim.g[g]
+    else
+        return default
+    end
+end
+
 ---@param s string
 ---@param tab_size integer
 ---@param to_trim integer
 ---@return string
 local function trim_inner(s, tab_size, to_trim)
     local indent = 1
+
     for i, char in s:gmatch('()(.)') do
         if indent > to_trim then
             return s:sub(i --[[@as integer]])
@@ -30,13 +49,13 @@ end
 
 ---@param from integer
 ---@param to integer
----@param style TrimBehavior
+---@param opt {trim: TrimBehavior, keep_empty: boolean}
 ---@return fun():string?
-local function trim_range(from, to, style)
+local function trim_range(from, to, opt)
     local trimmer
-    if style == const.TrimBehavior.NONE then
+    if opt.trim == const.TrimBehavior.NONE then
         trimmer = function(s) return s end
-    elseif style == const.TrimBehavior.ALWAYS then
+    elseif opt.trim == const.TrimBehavior.ALWAYS then
         trimmer = function(s) return s:match('^%s*(.-)%s*$') end
     else
         local indent = vim.fn.indent(from)
@@ -48,12 +67,18 @@ local function trim_range(from, to, style)
     local i = from - 1
 
     return function()
-        i = i + 1
-        if i > to then
-            return nil
-        end
+        while true do
+            i = i + 1
+            if i > to then
+                return nil
+            end
 
-        return trimmer(vim.fn.getline(i))
+            local line = vim.fn.getline(i)
+            local should_send = not opt.keep_empty or string.find(line, '[^%s]')
+            if should_send then
+                return trimmer(line)
+            end
+        end
     end
 end
 
@@ -125,12 +150,22 @@ function M.send_range(opts)
     local parsed = commandline.parse_flags(commandline.send_flags, opts.fargs)
 
     local trim_flag = commandline.send_flags.trim
-    local trim_style = parsed.flags.trim or
-        validate_b_opt("caveman_repl_trim", trim_flag.type, trim_flag.transform) or
-        validate_g_opt("caveman_repl_trim", trim_flag.type, trim_flag.transform) or
-        const.TrimBehavior.FOLLOW_FIRST_LINE
+    local opt = {
+        trim = parsed.flags.trim or
+            validate_b_opt("caveman_repl_trim", trim_flag.type, trim_flag.transform) or
+            validate_g_opt("caveman_repl_trim", trim_flag.type, trim_flag.transform) or
+            const.TrimBehavior.FOLLOW_FIRST_LINE,
+        keep_empty = get_bool_config(
+            parsed.flags.keep_empty,
+            "caveman_repl_keep_empty",
+            "caveman_repl_keep_empty",
+            false
+        )
+    }
 
-    for line in trim_range(opts.line1, opts.line2, trim_style) do
+    vim.print(opt)
+
+    for line in trim_range(opts.line1, opts.line2, opt) do
         vim.api.nvim_chan_send(job_id, line .. '\n')
     end
 end
