@@ -1,0 +1,75 @@
+Caveman REPL                                                    *caveman-repl*
+
+REPL plugin built with caveman technology.
+
+Usage                                                     *caveman-repl-usage*
+
+Use |:CavemanReplStart| to start a REPL session.
+
+Use |:CavemanReplSend| to send text to REPL's stdin.
+
+REPL sessions are simply |:terminal| sessions.
+
+                                                           *:CavemanReplStart*
+
+>
+    :CavemanReplStart [cmd args...]
+<
+
+Starts a REPL session. The command run is selected in the following order:
+
+1. Command argument (see below)
+2. Buffer variable |b:caveman_repl_command| (or vim.b.caveman_repl_command in
+   lua)
+3. User shell command (same as |:terminal|)
+
+Arguments:
+
+`cmd` is the command of the REPL program, and `args` are arguments to the
+program.
+
+Tip:
+
+To configure a REPL cmd for a specific filetype, create a file
+`ftplugin/<language>.lua` and paste in this script:
+
+>
+    -- example for python
+    vim.b.caveman_repl_command = {'python3', '-qi'}
+<
+
+                                                            *:CavemanReplSend*
+
+>
+    :[range]CavemanReplSend [flags]
+<
+
+Sends selected text to the REPL session. Sends the current line if no range is
+given.
+
+Flags:
+
+- `-trim=<behavior>`: see |b:caveman_repl_trim|
+
+Configuration                                     *caveman-repl-configuration*
+
+Configuration is done via the `g:caveman_repl_*` and `b:caveman_repl_*`
+variables. In lua, you would use `vim.g.caveman_repl_*` and
+`vim.b.caveman_repl_*` instead.
+
+                                                      *b:caveman_repl_command*
+
+Can be string or list of strings. The command (and arguments) to run for the
+REPL session.
+
+                                   *b:caveman_repl_trim* *g:caveman_repl_trim*
+
+One of: 'none', 'always', 'follow_first_line'.
+
+Used when sending input to the REPL session. Decides if indentation on each
+line should be trimmed.
+
+- `none`: Never trim indentation.
+- `always`: Always trim all indentation.
+- `follow_first_line`: Trim all indentation on the first line, and then trim
+  the same level of indentation as the first line on subsequent lines.
