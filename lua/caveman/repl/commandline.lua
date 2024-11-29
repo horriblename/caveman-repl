@@ -43,13 +43,13 @@ function M.parse_flags(flags, args)
         flag_name = string.gsub(flag_name, '^%-', '')
 
         local flag = flags[flag_name]
-        local validator = assert(
-            type(flag.type) == "function"
-            and flag.type --[[@as fun(string):boolean,string?]]
-            or builtin_types[flag.type]
-        )
-
         if flag then
+            local validator = assert(
+                type(flag.type) == "function"
+                and flag.type --[[@as fun(string):boolean,string?]]
+                or builtin_types[flag.type]
+            )
+
             vim.validate({
                 [flag_name] = { val, validator },
             })
