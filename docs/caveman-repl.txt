@@ -50,6 +50,7 @@ given.
 Flags:
 
 - `-trim=<behavior>`: see |b:caveman_repl_trim|
+- `-keep_empty=<bool>`: see |b:caveman_repl_keep_empty|
 
 Configuration                                     *caveman-repl-configuration*
 
@@ -73,3 +74,7 @@ line should be trimmed.
 - `always`: Always trim all indentation.
 - `follow_first_line`: Trim all indentation on the first line, and then trim
   the same level of indentation as the first line on subsequent lines.
+
+                         *b:caveman_repl_keep_empty* *g:caveman_repl_keep_empty*
+
+Boolean (default false). Whether to keep empty lines when sending to REPL.
