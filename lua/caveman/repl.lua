@@ -74,7 +74,7 @@ local function trim_range(from, to, opt)
             end
 
             local line = vim.fn.getline(i)
-            local should_send = not opt.keep_empty or string.find(line, '[^%s]')
+            local should_send = opt.keep_empty or string.find(line, '[^%s]')
             if should_send then
                 return trimmer(line)
             end
