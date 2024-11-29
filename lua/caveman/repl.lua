@@ -89,7 +89,6 @@ end
 ---@return any?
 local function validate_b_opt(key, typ, transform)
     local val = vim.b[key]
-    vim.print(val)
     if not val then
         return nil
     end
@@ -162,8 +161,6 @@ function M.send_range(opts)
             false
         )
     }
-
-    vim.print(opt)
 
     for line in trim_range(opts.line1, opts.line2, opt) do
         vim.api.nvim_chan_send(job_id, line .. '\n')
