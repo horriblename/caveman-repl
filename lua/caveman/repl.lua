@@ -80,6 +80,9 @@ end
 ---@param cmd string|string[]?
 function M.start(cmd)
     vim.validate({ cmd = { cmd, { 'string', 'table' }, true } })
+    if type(cmd) == "table" and cmd[1] == nil then
+        cmd = nil
+    end
     cmd = cmd or
         validate_b_opt("caveman_repl_cmd", { "string", "table" }) or
         {}
