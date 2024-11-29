@@ -33,6 +33,8 @@ function M.parse_flags(flags, args)
     local rest = {}
     for _, arg in ipairs(args) do
         local flag_name, val = split_once(arg, '=')
+        flag_name = string.gsub(flag_name, '^%-', '')
+
         local flag = flags[flag_name]
         if flag then
             vim.validate({
@@ -58,15 +60,16 @@ function M.gen_complete(flags)
 
     return function(arg_lead)
         local name, _ = split_once(arg_lead, '=')
+        name = string.gsub(name, '^%-', '')
         local flag = flags[name]
         if flag then
             return vim.iter(flag.complete()):map(function(item)
-                return name .. '=' .. item
+                return string.format('-%s=%s', name, item)
             end):totable()
         end
 
         return vim.iter(flag_names):map(function(fname)
-            return fname .. '='
+            return string.format('-%s=', fname)
         end):totable()
     end
 end
