@@ -49,7 +49,7 @@ local function trim_range(from, to, style)
 
     return function()
         i = i + 1
-        if i >= to then
+        if i > to then
             return nil
         end
 
