@@ -60,21 +60,34 @@ end
 ---Validate a vim.b.* option and return its value, or nil if not set
 ---@param key string
 ---@param typ string|string[]|fun(any):boolean
+---@param transform (fun(any):any)?
 ---@return any?
-local function validate_b_opt(key, typ)
+local function validate_b_opt(key, typ, transform)
+    local val = vim.b[key]
+    vim.print(val)
+    if not val then
+        return nil
+    end
     vim.validate({
-        ["vim.b." .. key] = { vim.b[key], typ, true }
+        ["vim.b." .. key] = { val, typ, true }
     })
+    return transform and transform(val) or val
 end
 
 ---Validate a vim.b.* option and return its value, or nil if not set
 ---@param key string
 ---@param typ string|string[]|fun(any):boolean
+---@param transform (fun(any):any)?
 ---@return any?
-local function validate_g_opt(key, typ)
+local function validate_g_opt(key, typ, transform)
+    local val = vim.g[key]
+    if not val then
+        return nil
+    end
     vim.validate({
-        ["vim.g." .. key] = { vim.g[key], typ, true }
+        ["vim.g." .. key] = { val, typ, true }
     })
+    return transform and transform(val) or val
 end
 
 ---@param cmd string|string[]?
@@ -113,8 +126,8 @@ function M.send_range(opts)
 
     local trim_flag = commandline.send_flags.trim
     local trim_style = parsed.flags.trim or
-        validate_b_opt("caveman_repl_trim", trim_flag.type) or
-        validate_g_opt("caveman_repl_trim", trim_flag.type) or
+        validate_b_opt("caveman_repl_trim", trim_flag.type, trim_flag.transform) or
+        validate_g_opt("caveman_repl_trim", trim_flag.type, trim_flag.transform) or
         const.TrimBehavior.FOLLOW_FIRST_LINE
 
     for line in trim_range(opts.line1, opts.line2, trim_style) do
